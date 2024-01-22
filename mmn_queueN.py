@@ -49,10 +49,9 @@ class MMN(Simulation):
 
         # print(self.queue)
         # exit()
-        self.running = {}
 
         # self.running = [collections.deque() for i in range(n)]
-        # self.running = [None] * n
+        self.running = []
         # self.queue = 1  # FIFO queue of the system
         # self.queue = collections.deque()  # FIFO queue of the system
         self.arrivals = {}  # dictionary mapping job id to arrival time
@@ -85,38 +84,40 @@ class Arrival(Event):
         self.id = job_id
 
     def process(self, sim: MMN):  # TODO: complete this method
-        # set the arrival time of the job
-        sim.arrivals[self.id] = sim.t
-        sim.running[self.id] = self.id
-        # randomly select 5 arrays of sim.running (sim.running is an array and its size is greater than 5) as Selected Queues, now find the Minimum length in Selected Queues as minimum_length and print arrays of Selected Queues with this minimum_length            selected_queues = random.sample(sim.running, sim.d)
+        if self.id == 0:
+            sim.schedule_arrival(self.id + 1)
+        else:
+            # set the arrival time of the job
+            sim.arrivals[self.id] = sim.t
+            print(sim.running)
+            sim.running.append(self.id)
+            # randomly select 5 arrays of sim.running (sim.running is an array and its size is greater than 5) as Selected Queues, now find the Minimum length in Selected Queues as minimum_length and print arrays of Selected Queues with this minimum_length            selected_queues = random.sample(sim.running, sim.d)
 
-        sim_running_list = list(sim.queue[0].values())
-        selected_queues = random.sample(sim_running_list, sim.d)
+            sim_running_list = list(sim.queue[0].values())
+            selected_queues = random.sample(sim_running_list, sim.d)
 
-        minimum_length = min(map(len, selected_queues))
+            minimum_length = min(map(len, selected_queues))
 
-        ids = [i for i, queue in enumerate(selected_queues) if len(queue) == minimum_length]
+            ids = [i for i, queue in enumerate(selected_queues) if len(queue) == minimum_length]
 
-        id = random.choice(ids)
-        random_id = selected_queues[id]
+            id = random.choice(ids)
+            random_id = selected_queues[id]
 
-        new_dict = {self.id: self.id}
+            new_dict = {self.id: self.id}
 
-        selected_queues[id].update(new_dict)
-        sim.schedule_arrival(self.id)
-        self.queue_id = random_id
+            selected_queues[id].update(new_dict)
+            sim.schedule_arrival(self.id)
+            self.queue_id = random_id
 
-        # set the arrival time of the job
-        sim.arrivals[self.id] = sim.t
-        # if there is no running job, assign the incoming one and schedule its completion
-        if len(sim.running) < sim.n:
-            sim.running = self.id
-            sim.schedule_completion(self.id)
-        # otherwise put the job into the queue
-
-        # schedule the arrival of the next job
-
-        sim.schedule_arrival(self.id + 1)
+            # set the arrival time of the job
+            sim.arrivals[self.id] = sim.t
+            # if there is no running job, assign the incoming one and schedule its completion
+            if len(sim.running) < sim.n:
+                sim.running = self.id
+                sim.schedule_completion(self.id)
+            # otherwise put the job into the queue
+            # schedule the arrival of the next job
+            sim.schedule_arrival(self.id + 1)
 
 
 class Completion(Event):
@@ -124,7 +125,9 @@ class Completion(Event):
         self.id = job_id  # currently unused, might be useful when extending
 
     def process(self, sim: MMN):  # TODO: complete this method
-        assert sim.running is not None
+        # print('ok')
+        # exit()
+        # assert sim.running is not None
         # set the completion time of the running job
         sim.completions[self.id] = sim.t
         # if the queue is not empty
@@ -134,10 +137,20 @@ class Completion(Event):
         #     sim.schedule_completion(next_job)
 
         # else:
-        for i in sim.queue:
-            if i[1] == self.id:
-                # print('ok')
-                # exit()
+        for i in sim.queue[0]:
+            # print(sim.queue[0][i])
+            # exit()
+            single_queue = sim.queue[0][i]
+            it = iter(single_queue.values())
+            first, second = next(it), next(it)
+
+            if single_queue[second] == self.id:
+                # it = iter(sim.running.values())
+                # first = next(it)
+
+                # print(sim.running)
+                # print(first)
+                exit()
                 sim.running.pop(self.id)
                 copied_dict = sim.queue[self.id].copy()
                 copied_dict.popitem()
