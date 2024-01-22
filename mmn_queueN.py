@@ -109,14 +109,13 @@ class Arrival(Event):
         # set the arrival time of the job
         sim.arrivals[self.id] = sim.t
         # if there is no running job, assign the incoming one and schedule its completion
-        if sim.running is None:
+        if len(sim.running) < sim.n:
             sim.running = self.id
             sim.schedule_completion(self.id)
         # otherwise put the job into the queue
 
         # schedule the arrival of the next job
-        print(sim.queue)
-        # exit()
+
         sim.schedule_arrival(self.id + 1)
 
 
@@ -129,25 +128,25 @@ class Completion(Event):
         # set the completion time of the running job
         sim.completions[self.id] = sim.t
         # if the queue is not empty
-        if sim.queue:
-            # get a job from the queue
-            for i in sim.queue:
-                if i[0] == self.id:
-                    # print('ok')
-                    # exit()
-                    sim.running.pop(self.id)
-                    copied_dict = sim.queue[self.id].copy()
-                    copied_dict.popitem()
-                    if self.id in sim.queue[self.id]:
-                        sim.queue[self.id].pop(self.id)
+        # if sim.queue:
+        #     next_job = sim.queue[self.id]
+        #     # next_job = sim.queue.popleft()
+        #     sim.schedule_completion(next_job)
 
-                    next_job = sim.queue[self.id]
-                    # next_job = sim.queue.popleft()
-                    sim.schedule_completion(next_job)
-                    break
+        # else:
+        for i in sim.queue:
+            if i[1] == self.id:
+                # print('ok')
+                # exit()
+                sim.running.pop(self.id)
+                copied_dict = sim.queue[self.id].copy()
+                copied_dict.popitem()
+                if self.id == copied_dict[0]:
+                    sim.queue[self.id].pop(self.id)
+                break
 
-        else:
-            sim.running = None
+            # sim.running = None
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -190,12 +189,12 @@ def main():
         sim.run(args.max_t)
         # print(sim.running)
 
-        # completions = sim.completions
+        completions = sim.completions
         # # print(sim.completions)
         # # exit()
-        # W = (sum(completions.values()) - sum(sim.arrivals[job_id] for job_id in completions)) / len(completions)
-        # print(f"Average time spent in the system: {W}")
-        # print(f"Theoretical expectation for random server choice: {1 / (1 - lambd_value)}")
+        W = (sum(completions.values()) - sum(sim.arrivals[job_id] for job_id in completions)) / len(completions)
+        print(f"Average time spent in the system: {W}")
+        print(f"Theoretical expectation for random server choice: {1 / (1 - lambd_value)}")
 
         # if args.csv is not None:
         #     with open(args.csv, 'a', newline='') as f:
